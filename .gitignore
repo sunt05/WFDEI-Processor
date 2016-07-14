@@ -8,6 +8,5 @@ WFDEI Interpolator pandas.ipynb
 WFDEI_2012.txt
 WFDEI_2012.txt.SAVE
 WFDEI_2012_30min.txt
-WFDEI_2012_60min.txt
 WFDEI_Interpolator_tstep.py
 *.pyc

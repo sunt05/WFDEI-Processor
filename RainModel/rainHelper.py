@@ -5,15 +5,15 @@ import numpy.fft as fft
 def generateNoise(beta, nt):
     # Generates fractal noise (metagaussian) given beta (spectral power exponent, nt (length of series, must be 2^n (int n))
     if beta is None:
-        raise TypeError('Spectral power exponent is not set')       
-    
+        raise TypeError('Spectral power exponent is not set')
+
     st = np.abs(beta)
     kt = np.concatenate((np.arange(0, nt/2+1), np.arange(-nt/2+1, 0)))
     kt = kt**2
     kt[0]=0.000001
     kt=kt**(-st/4)
     kt = kt/np.sqrt(np.sum(np.abs(kt.flat)**2)) * nt
-    
+
     # Metagauss
     ph = np.random.randn(nt)
     ph = fft.fftn(ph)
@@ -38,8 +38,8 @@ def rleTotals(vec):
     results['length'] = run_ends-run_starts
     results['total'] = [sum(vals[run_starts[i]:run_ends[i]]) for i in np.arange(run_starts.shape[0])]
     return results
-    
-   
+
+
 def realizeForEvent(rain,  minLength, maxLength, timeStepsPerInputBin):
     # Realize each rain event in the coarse time series
     # Checks there's no gap within the event longer than timeStepsPerInputBin
@@ -51,16 +51,16 @@ def realizeForEvent(rain,  minLength, maxLength, timeStepsPerInputBin):
         gapLengths = rleTotals(a == 0.0)
         validity = np.array(gapLengths['length']) < timeStepsPerInputBin
         validGapsInSeries = sum(validity) == validity.shape[0]
-    
+
     return a
-    
-    
+
+
 def generateTestCoarseData():
 
     # Generates hourly data as a coarse met time series for input to SuewsDataProcessing to5min method
     # Cols: YYYY, DOY, H, M, <21 cols of random numbers>
     # result[:,13] is rainfall accumulation so has intentional gaps in it
-    
+
     # Generate whole year of days
     Y = 2015
     DOYS = np.arange(0, 365)+1 # DOY 1 = 1st jan
@@ -68,7 +68,7 @@ def generateTestCoarseData():
     nMin = 1# Minutes per hour (1 = hourly data)
     M = np.arange(0,nMin)
     nRandomCols = 21 # Number of columns of data to generate
-    
+
     # Make a day of minutes
     dayOfMins =np.tile(M, 24)
     # ... and the hour to which they belong
@@ -90,7 +90,7 @@ def generateTestCoarseData():
     result[result[:,13] < 0.8, 13] = 0 # Only allow 20% of data through
 
     return result
-    
+
 
 def downscaleTimeSeries(series, res_in, res_out, IntensityModel, TemporalExtentModel, power_expt, wet_fraction):
     from RainGenerator import RainGenerator
@@ -98,36 +98,36 @@ def downscaleTimeSeries(series, res_in, res_out, IntensityModel, TemporalExtentM
     # Inputs: series:               np.array of rain accumulations. Assumption: accumulation at Ti is accumulation between T(i-1) and T(i)
     #         res_in:               Resolution of input time series (minutes)
     #         res_out:              Desired resolution (minutes)
-    #         IntensityModel:       Statistical model of rainfall intensity with a .transform(data) method that takes normally distributed input data, and 
-    #                               .calculateRainThreshold(wet_fraction) model that works out where to place a rain/no rain threshold. 
-    #         TemporalExtentModel:  Statistical model of rain period duration (pulses of rain) with .realize(lowerLimit, upperLimit) method. 
+    #         IntensityModel:       Statistical model of rainfall intensity with a .transform(data) method that takes normally distributed input data, and
+    #                               .calculateRainThreshold(wet_fraction) model that works out where to place a rain/no rain threshold.
+    #         TemporalExtentModel:  Statistical model of rain period duration (pulses of rain) with .realize(lowerLimit, upperLimit) method.
     #         power_expt:           Rain power spectrum exponent (power ~ freq^power_expt)
     #         wet_fraction:         The mean amount of time during a rain cluster that it's really raining (because intermittency exists)
     if sum(series<0) > 0:
         raise ValueError('Rainfall time series cannot contain negative data')
-    
+
     if res_out < 1:
         raise ValueError('This technique is only reasonable for timescales down to ~1 min')
-        
+
     if divmod(res_in, res_out)[1] > 0:
         raise ValueError('res_in must be an integer multiple of res_out: %f and %f given' % (res_in, res_out))
 
     timeConversion = res_in/res_out
-    # Preallocate the time series 
+    # Preallocate the time series
     newTS = np.zeros(series.shape[0]*timeConversion)
-     
+
     # Oversample original time series to get rainfall proportion in each coarse time bin
     osample = series[np.repeat(np.arange(0,series.shape[0]),timeConversion)]
-        
+
     # Step through series and identify runs of non-zero rain accumulation
     rainOccurring = rleTotals(series)
-    rainDurations = rainOccurring['length']*res_in 
-    # Instantiate rainfall generator 
-    rain = RainGenerator(IntensityModel, TemporalExtentModel) 
-    rain.setTimeRes(res_out) 
+    rainDurations = rainOccurring['length']*res_in
+    # Instantiate rainfall generator
+    rain = RainGenerator(IntensityModel, TemporalExtentModel)
+    rain.setTimeRes(res_out)
     rain.setSpectralPowerExpt(power_expt)
     rain.setRainFraction(wet_fraction)
-    
+
     # Realize a time series for each rain event (doesn't conserve mass, just duration)
     realz = [realizeForEvent(rain, rainDurations[i]-res_in+res_out, rainDurations[i], timeConversion) for i in range(rainDurations.shape[0])]
 
@@ -144,14 +144,14 @@ def downscaleTimeSeries(series, res_in, res_out, IntensityModel, TemporalExtentM
             endIndex = startIndex + min(ts.shape[0]-startIndex, int(timeConversion))
             if startIndex == endIndex:
                 replaceRange = startIndex
-            
+
             else:
                 replaceRange = np.arange(startIndex, endIndex)
-            
+
             ts[replaceRange] = ts[replaceRange]/sum(ts[replaceRange]) * mass
         # Populate new time series
         startPoint = int(rainOccurring['start'][i]*timeConversion)
-        insertRange = np.arange(startPoint, startPoint+ts.shape[0])         
+        insertRange = np.arange(startPoint, startPoint+ts.shape[0])
         newTS[insertRange] = ts
 
     return newTS

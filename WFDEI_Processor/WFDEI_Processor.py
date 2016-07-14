@@ -31,14 +31,13 @@ import os
 import sys
 from datetime import datetime, timedelta, date
 from scipy import interpolate
-import time
 import pandas as pd
 from Pysolar import solar
 from scipy import signal
 from RainModel.rainHelper import downscaleTimeSeries
 from RainModel.RainModels import LogNormalRainIntensity, WeibullClusterExtent
-import q2RH
-import WATCH_Utility
+from q2RH import *
+from WATCH_Utility import *
 
 
 # correct SW data based on energy conservation according to raw data:
@@ -375,7 +374,7 @@ def process_SUEWS_forcing_tmin(data_raw_3h, lat, lon, tstep_min, rain_opt):
 
 def write_SUEWS_forcing_1h(WFDEI_path, output_path, year_start, year_end, lat, lon, rain_opt):
     # load raw 3-hourly data
-    data_raw_3h = load_WFDEI_3h(input_path, year_start, year_end, lat, lon)
+    data_raw_3h = load_WFDEI_3h(WFDEI_path, year_start, year_end, lat, lon)
 
     # process raw data to hourly forcings for SUEWS
     data_out_1h = process_SUEWS_forcing_1h(data_raw_3h, lat, lon, rain_opt)
@@ -396,7 +395,7 @@ def write_SUEWS_forcing_1h(WFDEI_path, output_path, year_start, year_end, lat, l
 
 def write_SUEWS_forcing_tmin(WFDEI_path, output_path, year_start, year_end, lat, lon, tstep_min, rain_opt):
     # load raw 3-hourly data
-    data_raw_3h = load_WFDEI_3h(input_path, year_start, year_end, lat, lon)
+    data_raw_3h = load_WFDEI_3h(WFDEI_path, year_start, year_end, lat, lon)
 
     # process raw data to hourly forcings for SUEWS
     data_out_tmin = process_SUEWS_forcing_tmin(
@@ -414,93 +413,3 @@ def write_SUEWS_forcing_tmin(WFDEI_path, output_path, year_start, year_end, lat,
         print(file_output_year)
 
     print('********* WFDEI Data Processing Successfully Finished *********')
-
-
-##########################################################################
-# running section:
-# provide parameters here
-##########################################################################
-# read in data from WFDEI files
-
-input_path = '/Users/sunt05/Documents/Data/WFDEI/'
-# input_path = '/Volumes/DATA-TS/WFDEI/'
-
-output_path = '~/Downloads/'
-
-year_start, year_end = 2012, 2012
-
-lat, lon = 51.51, -0.12  # London
-# lat, lon = 51.58, -1.8  # Swindon
-
-tstep_min = 60  # minutes
-
-# 0 for unven distribution, 1 for spectrum-based method
-rain_opt = 1
-
-start = time.time()
-# write_SUEWS_forcing_1h(input_path, output_path,
-#                        year_start, year_end, lat, lon,rain_opt)
-
-write_SUEWS_forcing_tmin(input_path, output_path,
-                         year_start, year_end, lat, lon, tstep_min, rain_opt)
-
-end = time.time()
-print('time used in processing:' + '%.2f' % (end - start) + ' s')
-
-
-# # interatively get input parameters
-# while True:
-#     # WFDEI path:
-#     while True:
-#         input_path = raw_input("Please input the path for WFDEI data: ")
-#         input_path = os.path.realpath(os.path.expanduser(input_path))
-#         print input_path
-#         if os.path.lexists(input_path):
-#             break
-#         else:
-#             print "No such directory. Try again..."
-#
-#     # output path:
-#     while True:
-#         output_path = raw_input("Please input the path for output: ")
-#         output_path = os.path.realpath(os.path.expanduser(output_path))
-#         print output_path
-#         if os.path.lexists(output_path):
-#             break
-#         else:
-#             print "No such directory. Try again..."
-#
-#     # year range:
-#     while True:
-#         year_start = int(raw_input(
-#             "Please input the start year (YYYY): "))
-#         year_end = int(raw_input(
-#             "Please input the end year (YYYY): "))
-#         print(1979 <= year_start <= year_end <= 2014)
-#         if 1979 <= year_start <= year_end <= 2014:
-#             break
-#         else:
-#             print "Please input valid years. Try again..."
-#
-#     # coordinates:
-#     while True:
-#         lat = float(raw_input(
-#             "Please input the latitude (in deg): "))
-#         lon = float(raw_input(
-#             "Please input the longitude (in deg): "))
-#         print(-90 < lat < 90 and -180 < lon < 180)
-#         if -90 < lat < 90 and -180 < lon < 180:
-#             break
-#         else:
-#             print "Please input valid coordinates. Try again..."
-#
-#     start = time.time()
-#     write_SUEWS_forcing_1h(input_path, output_path,
-#                            year_start, year_end, lat, lon)
-#     end = time.time()
-#     print('time used in processing:' + '%.2f' % (end - start) + ' s')
-#
-#     t = raw_input('Do you want to quit? Y/N')
-#     if t == 'Y' or t == 'y':
-#         ftp.quit()
-#         break

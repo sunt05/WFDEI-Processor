@@ -10,6 +10,8 @@ from netCDF4 import Dataset
 
 
 
+dir=os.path.dirname(os.path.realpath(__file__))
+# print(dir)
 
 # determing grid index according to coordinates
 def lon_lat_grid(lat, lon):
@@ -43,7 +45,7 @@ def lon_lat_grid(lat, lon):
 
 # Get City Index: WATCH
 def WATCH_get_city_index(lat, lon):
-    nc = Dataset("WFD-land-lat-long-z.nc")
+    nc = Dataset(os.path.join(dir,"WFD-land-lat-long-z.nc"))
     for i in range(0, 67420):
         if nc.variables['Latitude'][i] == lat and nc.variables['Longitude'][i] == lon:
             index = i
@@ -53,7 +55,7 @@ def WATCH_get_city_index(lat, lon):
 
 # Get City Index: WFDEI
 def WFDEI_get_city_index(lat, lon):
-    with open('WFDEI-land-long-lat-height.txt') as f:
+    with open(os.path.join(dir,'WFDEI-land-long-lat-height.txt')) as f:
         ls = [line.split() for line in f]
     for i in range(7, len(ls)):
         if float(ls[i][0]) == lon and float(ls[i][1]) == lat:
