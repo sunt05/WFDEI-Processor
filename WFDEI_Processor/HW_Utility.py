@@ -1,5 +1,6 @@
 import numpy as np
 
+
 def memoize(fn):
     """returns a memoized version of any function that can be called
     with the same list of arguments.
@@ -27,13 +28,15 @@ def memoize(fn):
     foo.__name__ = 'memoized_' + fn.__name__
     return foo
 
+
+
 # split sequential list into sublists if sequence is broken
 def splitSeq2D(seq):
     sub = [seq[0]]
     res = []
     i = 1
     while i < len(seq):
-        if int(seq[i, 0]) - int(seq[i-1, 0]) == 1:
+        if int(seq[i, 0]) - int(seq[i - 1, 0]) == 1:
             sub.append(seq[i])
         else:
             res.append(sub)
@@ -42,18 +45,21 @@ def splitSeq2D(seq):
     res.append(sub)
     return res
 
+
 def group1st(data):
     keys = list(set([x[0] for x in data]))
     return [[y for y in data if y[0] == x] for x in keys]
 
 # split sequential list into sublists if not overlapped
+
+
 def splitOlp2D(xseq):
     seq = sorted(xseq)
     sub = [seq[0]]
     res = []
     i = 1
     while i < len(seq):
-        if seq[i-1][0] < seq[i][0] < seq[i-1][1] or seq[i-1][0] < seq[i][1] < seq[i-1][1]:
+        if seq[i - 1][0] < seq[i][0] < seq[i - 1][1] or seq[i - 1][0] < seq[i][1] < seq[i - 1][1]:
             sub.append(seq[i])
         else:
             res.append(sub)
@@ -64,11 +70,15 @@ def splitOlp2D(xseq):
 
 # when overlapped, pick out the longest one
 # if several longest ones exist, choose the first occurence
+
+
 def selectOlpLong(seq):
     resOlp = splitOlp2D(seq)
-    resOlpMax = [max([y[1]-y[0] for y in x]) for x in resOlp]
-    resOlpLong = [[x1 for x1 in x if x1[1]-x1[0]==y][0] for [x, y] in zip(resOlp,resOlpMax)]
+    resOlpMax = [max([y[1] - y[0] for y in x]) for x in resOlp]
+    resOlpLong = [[x1 for x1 in x if x1[1] - x1[0] == y][0]
+                  for [x, y] in zip(resOlp, resOlpMax)]
     return resOlpLong
+
 
 def HWFinder(rawdata, T1, T2):
     seq = np.arange(len(rawdata))
@@ -82,6 +92,7 @@ def HWFinder(rawdata, T1, T2):
 
     # search HWs in sublists
     dictHW = {}
+
     def HWSearch(data, T1, T2):
         # shortest scenario:
         if np.sort(data[:, 1])[-3] <= T1:
@@ -109,6 +120,3 @@ def HWFinder(rawdata, T1, T2):
     indListLong = selectOlpLong(indListMax)
 
     return np.sort(indListLong)
-
-
-
