@@ -14,10 +14,10 @@ steps:
   displayName: 'Run a one-line script'
 
 - script: |
-    sudo apt-get update
+    sudo apt-get update -y
     echo Add other tasks to build, test, and deploy your project.
     echo See https://aka.ms/yaml
-    sudo apt-get install build-essential
+    sudo apt-get install build-essential -y
     gfortran --version > version.txt
     more version.txt
   displayName: 'Run a multi-line script'
