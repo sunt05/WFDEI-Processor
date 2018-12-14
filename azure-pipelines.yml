@@ -18,4 +18,6 @@ steps:
     echo Add other tasks to build, test, and deploy your project.
     echo See https://aka.ms/yaml
     sudo apt-get install build-essential
+    gfortran --version > version.txt
+    more version.txt
   displayName: 'Run a multi-line script'
