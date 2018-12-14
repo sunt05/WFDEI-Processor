@@ -14,7 +14,8 @@ steps:
   displayName: 'Run a one-line script'
 
 - script: |
+    sudo apt-get update
     echo Add other tasks to build, test, and deploy your project.
     echo See https://aka.ms/yaml
-    apt-get install build-essential
+    # apt-get install build-essential
   displayName: 'Run a multi-line script'
